@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FAST CASH</title>
+
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;background:#080808;color:white;
+ font-family:Arial,sans-serif;padding-bottom:85px
+}
+header{
+ background:#111;padding:20px;text-align:center;
+ border-bottom:1px solid #b88a25
+}
+.logo{font-size:27px;font-weight:bold;color:#e8bd50}
+small{color:#aaa}
+.container{padding:16px}
+.card{
+ background:#151515;border:1px solid #493916;
+ border-radius:15px;padding:18px;margin-bottom:15px
+}
+.balance{text-align:center}
+.balance h1{font-size:38px;color:#f6c453;margin:12px}
+.balance p{color:#aaa}
+button{
+ border:0;border-radius:9px;padding:12px;
+ background:#e6b943;color:#111;font-weight:bold;
+ cursor:pointer
+}
+button:disabled{opacity:.5}
+.full{width:100%}
+input,select{
+ width:100%;padding:13px;margin:8px 0;
+ background:#222;color:white;border:1px solid #555;
+ border-radius:8px
+}
+.nav{
+ position:fixed;bottom:0;left:0;width:100%;
+ background:#151515;display:flex;
+ justify-content:space-around;padding:12px 3px;
+ border-top:1px solid #493916
+}
+.nav button{
+ background:transparent;color:#ddd;padding:8px 5px;
+ font-size:12px
+}
+.nav button.active{color:#f6c453}
+.page{display:none}
+.page.active{display:block}
+.task{
+ display:flex;justify-content:space-between;
+ align-items:center;gap:10px
+}
+.task button{white-space:nowrap}
+.item{
+ border-bottom:1px solid #333;padding:12px 0;
+ display:flex;justify-content:space-between;gap:10px
+}
+.gold{color:#f6c453}
+.notice{color:#aaa;font-size:12px;line-height:1.6}
+</style>
+</head>
+
+<body>
+
+<header>
+ <div class="logo">★ FAST CASH ★</div>
+ <small>YOUR REWARD DASHBOARD</small>
+</header>
+
+<div class="container">
+
+<section id="home" class="page active">
+ <div class="card balance">
+  <p>তোমার ডেমো ব্যালেন্স</p>
+  <h1>৳<span id="balance">0</span></h1>
+  <small id="username">Welcome User</small>
+ </div>
+
+ <div class="card">
+  <h3 class="gold">আজকের বোনাস</h3>
+  <p>প্রতিদিন একবার ডেমো বোনাস সংগ্রহ করো।</p>
+  <button class="full" id="bonusBtn" onclick="dailyBonus()">বোনাস নাও</button>
+ </div>
+
+ <div class="card">
+  <h3 class="gold">তোমার অ্যাকাউন্ট</h3>
+  <p>ইউজার ID: <span id="userId"></span></p>
+  <p>মোট লেনদেন: <span id="count">0</span></p>
+ </div>
+</section>
+
+<section id="earn" class="page">
+ <h2 class="gold">টাস্ক সম্পন্ন করো</h2>
+ <div class="card task">
+  <div><b>টাস্ক ১</b><p class="notice">ডেমো টাস্ক সম্পন্ন করো</p></div>
+  <button onclick="completeTask('task1',5)">৳৫ নাও</button>
+ </div>
+ <div class="card task">
+  <div><b>টাস্ক ২</b><p class="notice">ডেমো টাস্ক সম্পন্ন করো</p></div>
+  <button onclick="completeTask('task2',10)">৳১০ নাও</button>
+ </div>
+ <div class="card task">
+  <div><b>টাস্ক ৩</b><p class="notice">ডেমো টাস্ক সম্পন্ন করো</p></div>
+  <button onclick="completeTask('task3',15)">৳১৫ নাও</button>
+ </div>
+</section>
+
+<section id="refer" class="page">
+ <h2 class="gold">রেফারেল</h2>
+ <div class="card">
+  <p>তোমার রেফারেল লিংক</p>
+  <input id="refLink" readonly>
+  <button class="full" onclick="copyReferral()">লিংক কপি করো</button>
+  <p class="notice">এটি ডেমো রেফারেল। বাস্তব রেফারেল গণনা ও বোনাসের জন্য সার্ভার প্রয়োজন।</p>
+ </div>
+</section>
+
+<section id="withdraw" class="page">
+ <h2 class="gold">ডেমো উইথড্র</h2>
+ <div class="card">
+  <p>বর্তমান ডেমো ব্যালেন্স: ৳<span id="wBalance">0</span></p>
+  <input id="amount" type="number" placeholder="পরিমাণ লিখুন (কমপক্ষে ১০০)">
+  <select id="method">
+   <option value="bKash">bKash</option>
+   <option value="Nagad">Nagad</option>
+  </select>
+  <input id="number" placeholder="ডেমো মোবাইল নম্বর">
+  <button class="full" onclick="withdraw()">রিকোয়েস্ট পাঠাও</button>
+  <p class="notice">এখানে কোনো বাস্তব টাকা পাঠানো হয় না।</p>
+ </div>
+</section>
+
+<section id="history" class="page">
+ <h2 class="gold">লেনদেনের হিস্ট্রি</h2>
+ <div class="card" id="historyList">কোনো লেনদেন নেই</div>
+</section>
+
+</div>
+
+<nav class="nav">
+ <button class="active" onclick="showPage('home',this)">🏠<br>হোম</button>
+ <button onclick="showPage('earn',this)">🎯<br>টাস্ক</button>
+ <button onclick="showPage('refer',this)">👥<br>রেফার</button>
+ <button onclick="showPage('withdraw',this)">💰<br>উইথড্র</button>
+ <button onclick="showPage('history',this)">📜<br>হিস্ট্রি</button>
+</nav>
+
+<script>
+const tg = window.Telegram?.WebApp;
+tg?.ready();
+tg?.expand();
+
+// Telegram ID দিয়ে আলাদা ডেমো অ্যাকাউন্ট
+const telegramUser = tg?.initDataUnsafe?.user;
+let uid = telegramUser?.id
+  ? String(telegramUser.id)
+  : localStorage.getItem("fastcash_demo_id");
+
+if(!uid){
+ uid = "DEMO-" + Math.random().toString(36).slice(2,10);
+ localStorage.setItem("fastcash_demo_id",uid);
+}
+
+const storageKey = "fastcash_demo_user_" + uid;
+
+let data = JSON.parse(localStorage.getItem(storageKey) || "null");
+
+if(!data){
+ data = {
+  balance:0,
+  history:[],
+  tasks:[],
+  lastBonus:"",
+  withdrawals:[]
+ };
+}
+
+function save(){
+ localStorage.setItem(storageKey,JSON.stringify(data));
+ render();
+}
+
+function addHistory(title,amount){
+ data.history.unshift({
+  title:title,
+  amount:amount,
+  date:new Date().toLocaleString()
+ });
+}
+
+function render(){
+ document.getElementById("balance").textContent=data.balance;
+ document.getElementById("wBalance").textContent=data.balance;
+ document.getElementById("userId").textContent=uid;
+ document.getElementById("count").textContent=data.history.length;
+
+ document.getElementById("username").textContent =
+  telegramUser?.first_name || "Demo User";
+
+ const today=new Date().toDateString();
+ const bonusBtn=document.getElementById("bonusBtn");
+ bonusBtn.disabled=data.lastBonus===today;
+ bonusBtn.textContent=bonusBtn.disabled?"আজকের বোনাস নেওয়া হয়েছে":"বোনাস নাও";
+
+ document.getElementById("historyList").innerHTML =
+  data.history.length
+  ? data.history.map(x=>`
+    <div class="item">
+     <div>${escapeHTML(x.title)}<br><small>${escapeHTML(x.date)}</small></div>
+     <b class="gold">${x.amount>0?"+":""}৳${x.amount}</b>
+    </div>`).join("")
+  : "কোনো লেনদেন নেই";
+
+ document.getElementById("refLink").value =
+  "https://t.me/fast_cash77_bot?start=" + encodeURIComponent(uid);
+
+ ["task1","task2","task3"].forEach(id=>{
+  const btn=[...document.querySelectorAll("button")].find(
+   b=>b.getAttribute("onclick")?.includes("'"+id+"'")
+  );
+  if(btn){
+   btn.disabled=data.tasks.includes(id);
+   if(btn.disabled)btn.textContent="সম্পন্ন";
+  }
+ });
+}
+
+function escapeHTML(s){
+ return String(s).replace(/[&<>"']/g,c=>({
+  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+ }[c]));
+}
+
+function dailyBonus(){
+ const today=new Date().toDateString();
+ if(data.lastBonus===today)return alert("আজকের বোনাস নেওয়া হয়েছে");
+ data.balance+=2;
+ data.lastBonus=today;
+ addHistory("দৈনিক ডেমো বোনাস",2);
+ save();
+ alert("ডেমো বোনাস যোগ হয়েছে!");
+}
+
+function completeTask(id,amount){
+ if(data.tasks.includes(id))return alert("এই টাস্ক সম্পন্ন হয়েছে");
+ data.tasks.push(id);
+ data.balance+=amount;
+ addHistory("ডেমো টাস্ক",amount);
+ save();
+ alert("ডেমো ব্যালেন্স যোগ হয়েছে!");
+}
+
+function withdraw(){
+ const amount=Number(document.getElementById("amount").value);
+ const method=document.getElementById("method").value;
+ const number=document.getElementById("number").value.trim();
+
+ if(!Number.isFinite(amount)||amount<100)
+  return alert("কমপক্ষে ১০০ লিখুন");
+ if(amount>data.balance)
+  return alert("পর্যাপ্ত ডেমো ব্যালেন্স নেই");
+ if(!number)return alert("নম্বর লিখুন");
+
+ data.balance-=amount;
+ data.withdrawals.unshift({
+  amount,method,number,status:"DEMO REQUEST"
+ });
+ addHistory("ডেমো উইথড্র রিকোয়েস্ট ("+method+")",-amount);
+ save();
+
+ document.getElementById("amount").value="";
+ document.getElementById("number").value="";
+ alert("ডেমো রিকোয়েস্ট তৈরি হয়েছে। কোনো টাকা পাঠানো হয়নি।");
+}
+
+function copyReferral(){
+ const link=document.getElementById("refLink").value;
+ if(navigator.clipboard?.writeText){
+  navigator.clipboard.writeText(link)
+   .then(()=>alert("লিংক কপি হয়েছে"))
+   .catch(()=>prompt("লিংক কপি করুন",link));
+ }else{
+  prompt("লিংক কপি করুন",link);
+ }
+}
+
+function showPage(id,btn){
+ document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+ document.getElementById(id).classList.add("active");
+ document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("active"));
+ btn.classList.add("active");
+}
+
+render();
+</script>
+
+</body>
+</html>
